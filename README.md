@@ -13,6 +13,10 @@ Mamba is a Flask-based online learning platform with student and admin experienc
 - Course completion certificate
 - SQLite locally and PostgreSQL on Render
 
+## Documentation
+
+Detailed project documentation is available in [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md).
+
 ## Run Locally
 
 1. Create a virtual environment and activate it.
@@ -38,7 +42,7 @@ python app.py
 
 ## Deploy on Render
 
-This repo now includes [render.yaml](</C:/Users/musta/Documents/Codex/2026-04-22-codex-ai-coding-tool-flask-mamba/render.yaml>) so Render can create both:
+This repo now includes [render.yaml](render.yaml) so Render can create both:
 
 - a Python web service for Flask
 - a PostgreSQL database for Mamba
