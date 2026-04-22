@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+{% set can_access = current_user.is_authenticated and (current_user.role == 'admin' or enrollment) %}
+<section class="course-hero mb-5">
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-8">
+            <span class="eyebrow">Course overview</span>
+            <h1 class="display-6 fw-bold mt-3 mb-3">{{ course.title }}</h1>
+            <p class="lead text-secondary mb-4">{{ course.description }}</p>
+            <div class="d-flex flex-wrap gap-3">
+                <span class="pill-chip">{{ course.total_lessons }} lessons</span>
+                <span class="pill-chip">{{ course.quizzes|length }} quizzes</span>
+                <span class="pill-chip">{{ course.enrolled_students }} learners</span>
+                <span class="pill-chip">Avg progress {{ course.average_progress }}%</span>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="surface-card p-4 h-100">
+                <h5 class="mb-3">Your access</h5>
+                {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                    <p class="text-secondary">You are previewing this course as an admin.</p>
+                    <a class="btn btn-dark rounded-pill w-100" href="{{ url_for('admin.edit_course', course_id=course.id) }}">Manage Course</a>
+                {% elif enrollment %}
+                    <p class="text-secondary mb-2">You are enrolled and your progress is tracked automatically as you complete lessons.</p>
+                    <div class="progress mb-3" role="progressbar" aria-valuenow="{{ enrollment.progress }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar bg-success" style="width: {{ enrollment.progress }}%">{{ enrollment.progress }}%</div>
+                    </div>
+                    <a class="btn btn-dark rounded-pill w-100" href="{{ url_for('student.dashboard') }}">Open Dashboard</a>
+                {% elif current_user.is_authenticated %}
+                    <p class="text-secondary">Enroll to unlock the lesson content, quizzes, progress tracking, and certificate.</p>
+                    <form method="post" action="{{ url_for('student.enroll_course', course_id=course.id) }}">
+                        {{ enroll_form.hidden_tag() }}
+                        <button class="btn btn-success rounded-pill w-100" type="submit">Enroll Now</button>
+                    </form>
+                {% else %}
+                    <p class="text-secondary">Create an account to enroll and continue from your own learning dashboard.</p>
+                    <a class="btn btn-success rounded-pill w-100" href="{{ url_for('auth.register') }}">Create Account</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4 mb-5">
+    <div class="col-lg-7">
+        <div class="surface-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 mb-0">Lessons</h2>
+                {% if enrollment %}
+                    <span class="badge text-bg-success rounded-pill">{{ enrollment.progress }}% complete</span>
+                {% endif %}
+            </div>
+            {% if course.lessons %}
+                <div class="list-group list-group-flush">
+                    {% for lesson in course.lessons %}
+                        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center bg-transparent">
+                            <div>
+                                <div class="fw-semibold">{{ loop.index }}. {{ lesson.title }}</div>
+                                <div class="text-secondary small">Text lesson{% if lesson.video_url %} with video support{% endif %}</div>
+                            </div>
+                            {% if can_access %}
+                                <a class="btn btn-sm btn-outline-dark rounded-pill" href="{{ url_for('student.lesson_page', course_id=course.id, lesson_id=lesson.id) }}">Open Lesson</a>
+                            {% else %}
+                                <span class="badge text-bg-light rounded-pill">Locked</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">Lessons will appear here once the admin adds content.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="surface-card p-4 h-100">
+            <h2 class="h4 mb-3">Quizzes</h2>
+            {% if course.quizzes %}
+                <div class="vstack gap-3">
+                    {% for quiz in course.quizzes %}
+                        <div class="mini-panel">
+                            <div class="fw-semibold">{{ quiz.title }}</div>
+                            <div class="text-secondary small mb-3">{{ quiz.questions|length }} questions</div>
+                            {% if can_access %}
+                                <a class="btn btn-sm btn-dark rounded-pill" href="{{ url_for('student.quiz_page', course_id=course.id, quiz_id=quiz.id) }}">Take Quiz</a>
+                            {% else %}
+                                <span class="badge text-bg-light rounded-pill">Enroll to unlock</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">No quizzes have been published yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% if related_courses %}
+<section>
+    <div class="mb-3">
+        <span class="eyebrow">More to explore</span>
+        <h2 class="section-title mb-0">Related courses</h2>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        {% for course in related_courses %}
+            {% include "partials/course_card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+

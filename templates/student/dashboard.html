@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="mb-5">
+    <span class="eyebrow">Student dashboard</span>
+    <h1 class="display-6 fw-bold mt-3 mb-4">Welcome back, {{ current_user.username }}</h1>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="metric-card">
+                <div class="metric-value">{{ enrollments|length }}</div>
+                <div class="metric-label">Enrolled courses</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card">
+                <div class="metric-value">{{ enrollments | selectattr('is_complete') | list | length }}</div>
+                <div class="metric-label">Completed courses</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card">
+                <div class="metric-value">{{ submissions|length }}</div>
+                <div class="metric-label">Recent quiz attempts</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <span class="eyebrow">Learning progress</span>
+            <h2 class="section-title mb-0">Your active courses</h2>
+        </div>
+        <a class="btn btn-outline-dark rounded-pill px-3" href="{{ url_for('main.courses') }}">Explore more</a>
+    </div>
+
+    {% if enrollments %}
+        <div class="row g-4">
+            {% for enrollment in enrollments %}
+                <div class="col-lg-6">
+                    <div class="surface-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                <h3 class="h5 mb-1">{{ enrollment.course.title }}</h3>
+                                <p class="text-secondary mb-0">{{ enrollment.course.description[:120] }}{% if enrollment.course.description|length > 120 %}...{% endif %}</p>
+                            </div>
+                            <span class="badge text-bg-dark rounded-pill">{{ enrollment.progress }}%</span>
+                        </div>
+                        <div class="progress mb-3" role="progressbar" aria-valuenow="{{ enrollment.progress }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-success" style="width: {{ enrollment.progress }}%"></div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a class="btn btn-dark rounded-pill px-3" href="{{ url_for('main.course_detail', course_id=enrollment.course.id) }}">Open Course</a>
+                            {% if enrollment.course.quizzes %}
+                                <a class="btn btn-outline-dark rounded-pill px-3" href="{{ url_for('student.quiz_page', course_id=enrollment.course.id, quiz_id=enrollment.course.quizzes[0].id) }}">Take Quiz</a>
+                            {% endif %}
+                            {% if enrollment.is_complete %}
+                                <a class="btn btn-outline-success rounded-pill px-3" href="{{ url_for('student.certificate', course_id=enrollment.course.id) }}">Certificate</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="surface-card p-5 text-center">
+            <h3 class="mb-2">Your dashboard is ready.</h3>
+            <p class="text-secondary mb-4">Enroll in a course to start tracking progress and quiz results.</p>
+            <a class="btn btn-success rounded-pill px-4" href="{{ url_for('main.courses') }}">Browse Courses</a>
+        </div>
+    {% endif %}
+</section>
+
+<section class="row g-4">
+    <div class="col-lg-8">
+        <div class="surface-card p-4 h-100">
+            <div class="mb-3">
+                <span class="eyebrow">Recommended</span>
+                <h2 class="section-title mb-0">Suggested next moves</h2>
+            </div>
+            {% if recommended_courses %}
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    {% for course in recommended_courses %}
+                        {% include "partials/course_card.html" %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">Keep going. As you enroll in more courses, Mamba will recommend related topics here.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="surface-card p-4 h-100">
+            <div class="mb-3">
+                <span class="eyebrow">Quiz history</span>
+                <h2 class="section-title mb-0">Recent attempts</h2>
+            </div>
+            {% if submissions %}
+                <div class="vstack gap-3">
+                    {% for submission in submissions %}
+                        <div class="mini-panel">
+                            <div class="fw-semibold">{{ submission.quiz.title }}</div>
+                            <div class="text-secondary small">Score {{ submission.score }}/{{ submission.total_questions }}</div>
+                            <div class="text-secondary small">{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">Quiz attempts will show up here after your first submission.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

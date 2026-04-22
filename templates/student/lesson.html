@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+
+{% block content %}
+{% set is_completed = enrollment and lesson.id in completed_lesson_ids %}
+<section class="row g-4">
+    <div class="col-lg-4">
+        <div class="surface-card p-4 mb-4">
+            <span class="eyebrow">Course progress</span>
+            <h1 class="h3 mt-3 mb-3">{{ course.title }}</h1>
+            {% if enrollment %}
+                <div class="progress mb-3" role="progressbar" aria-valuenow="{{ enrollment.progress }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-success" style="width: {{ enrollment.progress }}%">{{ enrollment.progress }}%</div>
+                </div>
+            {% else %}
+                <p class="text-secondary">Admin preview mode.</p>
+            {% endif %}
+            <div class="vstack gap-2">
+                {% for item in course.lessons %}
+                    <a class="lesson-nav-item {% if item.id == lesson.id %}active{% endif %}" href="{{ url_for('student.lesson_page', course_id=course.id, lesson_id=item.id) }}">
+                        <span>{{ loop.index }}. {{ item.title }}</span>
+                        {% if enrollment and item.id in completed_lesson_ids %}
+                            <span class="badge text-bg-success rounded-pill">Done</span>
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if course.quizzes %}
+            <div class="surface-card p-4">
+                <h2 class="h5 mb-3">Ready for the checkpoint?</h2>
+                <p class="text-secondary">Take the course quiz whenever you want to test your understanding.</p>
+                <a class="btn btn-dark rounded-pill w-100" href="{{ url_for('student.quiz_page', course_id=course.id, quiz_id=course.quizzes[0].id) }}">Open Quiz</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+        <div class="surface-card p-4 p-lg-5 mb-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                    <span class="eyebrow">Lesson</span>
+                    <h1 class="h2 mt-2">{{ lesson.title }}</h1>
+                </div>
+                {% if enrollment %}
+                    {% if is_completed %}
+                        <span class="badge text-bg-success rounded-pill">Completed</span>
+                    {% else %}
+                        <form method="post" action="{{ url_for('student.complete_lesson', course_id=course.id, lesson_id=lesson.id) }}">
+                            {{ complete_form.hidden_tag() }}
+                            <button class="btn btn-success rounded-pill" type="submit">Mark Complete</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            {% if lesson.video_url %}
+                <div class="ratio ratio-16x9 mb-4 rounded overflow-hidden">
+                    <iframe src="{{ lesson.video_url }}" title="{{ lesson.title }}" allowfullscreen></iframe>
+                </div>
+            {% endif %}
+
+            <div class="lesson-content">
+                <p>{{ lesson.content }}</p>
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-between gap-3 mt-4 pt-4 border-top">
+                <div class="d-flex gap-2">
+                    {% if previous_lesson %}
+                        <a class="btn btn-outline-dark rounded-pill" href="{{ url_for('student.lesson_page', course_id=course.id, lesson_id=previous_lesson.id) }}">Previous</a>
+                    {% endif %}
+                    {% if next_lesson %}
+                        <a class="btn btn-dark rounded-pill" href="{{ url_for('student.lesson_page', course_id=course.id, lesson_id=next_lesson.id) }}">Next Lesson</a>
+                    {% endif %}
+                </div>
+                <a class="btn btn-outline-secondary rounded-pill" href="{{ url_for('main.course_detail', course_id=course.id) }}">Back to Course</a>
+            </div>
+        </div>
+
+        <div class="surface-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 mb-0">Lesson discussion</h2>
+                <span class="text-secondary small">{{ lesson.comments|length }} comments</span>
+            </div>
+            <form method="post" novalidate class="mb-4">
+                {{ comment_form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ comment_form.content(class="form-control", rows="4", placeholder="Share a question, summary, or insight from this lesson") }}
+                    {% for error in comment_form.content.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {{ comment_form.submit(class="btn btn-dark rounded-pill px-4") }}
+            </form>
+
+            {% if lesson.comments %}
+                <div class="vstack gap-3">
+                    {% for comment in lesson.comments %}
+                        <div class="mini-panel">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong>{{ comment.user.username }}</strong>
+                                <span class="text-secondary small">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                            </div>
+                            <p class="mb-0 text-secondary">{{ comment.content }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">No comments yet. Start the conversation.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

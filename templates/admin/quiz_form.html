@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{% if quiz %}Edit Quiz{% else %}New Quiz{% endif %}{% endblock %}
+
+{% block content %}
+<section class="mb-4">
+    <span class="eyebrow">Quiz editor</span>
+    <h1 class="display-6 fw-bold mt-3 mb-2">{% if quiz %}Edit {{ quiz.title }}{% else %}Create quiz for {{ course.title }}{% endif %}</h1>
+    <p class="text-secondary mb-0">Use concise quiz titles, then add multiple-choice questions below.</p>
+</section>
+
+<section class="surface-card p-4 p-lg-5 mb-4">
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control form-control-lg") }}
+            {% for error in form.title.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+            {{ form.submit(class="btn btn-success rounded-pill px-4") }}
+            <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.edit_course', course_id=course.id) }}">Back to course</a>
+        </div>
+    </form>
+    {% if quiz %}
+        <form method="post" action="{{ url_for('admin.delete_quiz', quiz_id=quiz.id) }}" class="mt-3">
+            {{ delete_form.hidden_tag() }}
+            <button class="btn btn-outline-danger rounded-pill px-4" type="submit" data-confirm="Delete this quiz and all of its questions?">Delete quiz</button>
+        </form>
+    {% endif %}
+</section>
+
+{% if quiz %}
+<section class="surface-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Questions</h2>
+        <a class="btn btn-sm btn-dark rounded-pill" href="{{ url_for('admin.new_question', quiz_id=quiz.id) }}">Add question</a>
+    </div>
+    {% if quiz.questions %}
+        <div class="vstack gap-3">
+            {% for question in quiz.questions %}
+                <div class="mini-panel">
+                    <div class="fw-semibold mb-2">{{ loop.index }}. {{ question.question_text }}</div>
+                    <div class="text-secondary small mb-3">Correct answer: {{ question.correct_answer }}</div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a class="btn btn-sm btn-outline-dark rounded-pill" href="{{ url_for('admin.edit_question', question_id=question.id) }}">Edit</a>
+                        <form method="post" action="{{ url_for('admin.delete_question', question_id=question.id) }}">
+                            {{ delete_form.hidden_tag() }}
+                            <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit" data-confirm="Delete this question?">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-secondary mb-0">No questions added yet.</p>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}

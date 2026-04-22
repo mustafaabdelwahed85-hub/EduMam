@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: mamba-web
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mamba-db
+          property: connectionString
+
+databases:
+  - name: mamba-db
+    plan: free
+    databaseName: mamba
+    user: mamba

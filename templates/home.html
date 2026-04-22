@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero-panel p-4 p-lg-5 mb-5">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <span class="eyebrow">Learn with confidence</span>
+            <h1 class="display-4 fw-bold mt-3 mb-3">Mamba helps learners move from curiosity to completion.</h1>
+            <p class="lead text-secondary mb-4">
+                Explore practical courses, track your lesson progress, take quizzes, and earn proof of completion from one clean dashboard.
+            </p>
+            <form method="get" action="{{ url_for('main.courses') }}" class="hero-search mb-4">
+                <input type="text" name="q" class="form-control form-control-lg rounded-pill" placeholder="Search Python, frontend, SQL, and more">
+                <button class="btn btn-dark btn-lg rounded-pill px-4" type="submit">Search Courses</button>
+            </form>
+            <div class="d-flex flex-wrap gap-3">
+                <a class="btn btn-success btn-lg rounded-pill px-4" href="{{ url_for('main.courses') }}">Browse Catalog</a>
+                {% if current_user.is_authenticated %}
+                    <a class="btn btn-outline-dark btn-lg rounded-pill px-4" href="{{ url_for('admin.dashboard' if current_user.role == 'admin' else 'student.dashboard') }}">Open Dashboard</a>
+                {% else %}
+                    <a class="btn btn-outline-dark btn-lg rounded-pill px-4" href="{{ url_for('auth.register') }}">Create Free Account</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="metric-card">
+                        <div class="metric-value">{{ featured_courses|length }}</div>
+                        <div class="metric-label">Featured tracks</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="metric-card">
+                        <div class="metric-value">100%</div>
+                        <div class="metric-label">Responsive UI</div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="info-card">
+                        <h5 class="mb-2">Why learners like Mamba</h5>
+                        <p class="mb-0 text-secondary">
+                            Course pages, lesson progress, quizzes, comments, and certificates all live in one workflow so students can stay focused.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <span class="eyebrow">Featured</span>
+            <h2 class="section-title mb-0">Popular courses</h2>
+        </div>
+        <a class="btn btn-outline-dark rounded-pill px-3" href="{{ url_for('main.courses') }}">See all courses</a>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        {% for course in featured_courses %}
+            {% include "partials/course_card.html" %}
+        {% endfor %}
+    </div>
+</section>
+
+{% if recommended_courses %}
+<section class="mb-5">
+    <div class="mb-3">
+        <span class="eyebrow">Recommendations</span>
+        <h2 class="section-title mb-0">Next best picks</h2>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        {% for course in recommended_courses %}
+            {% include "partials/course_card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="row g-4">
+    <div class="col-md-4">
+        <div class="feature-card h-100">
+            <h5>Structured learning</h5>
+            <p class="text-secondary mb-0">Every course organizes lessons, quizzes, and milestones so students always know the next step.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card h-100">
+            <h5>Admin ready</h5>
+            <p class="text-secondary mb-0">Admins can create courses, add lessons, publish quizzes, and manage user visibility from one place.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card h-100">
+            <h5>Momentum focused</h5>
+            <p class="text-secondary mb-0">Progress bars, activity history, and certificates make it easier to keep learners engaged to the end.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+<section class="mb-4">
+    <span class="eyebrow">Quiz</span>
+    <h1 class="display-6 fw-bold mt-3 mb-2">{{ quiz.title }}</h1>
+    <p class="text-secondary mb-0">Course: {{ course.title }}</p>
+</section>
+
+{% if latest_submission %}
+    <div class="surface-card p-3 mb-4">
+        <strong>Latest saved attempt:</strong>
+        <span class="text-secondary"> {{ latest_submission.score }}/{{ latest_submission.total_questions }} on {{ latest_submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</span>
+    </div>
+{% endif %}
+
+<section class="surface-card p-4 p-lg-5">
+    {% if quiz.questions %}
+        <form method="post">
+            <div class="vstack gap-4">
+                {% for question in quiz.questions %}
+                    <div class="quiz-question">
+                        <h2 class="h5 mb-3">{{ loop.index }}. {{ question.question_text }}</h2>
+                        <div class="vstack gap-2">
+                            {% for option in question.options %}
+                                {% set option_id = 'q' ~ question.id ~ '-' ~ loop.index %}
+                                <label class="option-card" for="{{ option_id }}">
+                                    <input
+                                        class="form-check-input"
+                                        type="radio"
+                                        id="{{ option_id }}"
+                                        name="question_{{ question.id }}"
+                                        value="{{ option }}"
+                                        {% if submitted_answers.get(question.id|string) == option %}checked{% endif %}
+                                    >
+                                    <span>{{ option }}</span>
+                                    {% if score is not none and question.correct_answer == option %}
+                                        <span class="badge text-bg-success rounded-pill">Correct answer</span>
+                                    {% endif %}
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {% if score is not none %}
+                            <div class="mt-3 small {% if submitted_answers.get(question.id|string) == question.correct_answer %}text-success{% else %}text-danger{% endif %}">
+                                Your answer:
+                                {{ submitted_answers.get(question.id|string, 'No answer') }}
+                                | Correct answer: {{ question.correct_answer }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex flex-wrap gap-3 mt-4">
+                <button class="btn btn-dark rounded-pill px-4" type="submit">Submit Quiz</button>
+                <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('main.course_detail', course_id=course.id) }}">Back to Course</a>
+                {% if enrollment and enrollment.is_complete %}
+                    <a class="btn btn-outline-success rounded-pill px-4" href="{{ url_for('student.certificate', course_id=course.id) }}">Open Certificate</a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if score is not none %}
+            <div class="result-banner mt-4">
+                <h3 class="h4 mb-1">Score: {{ score }}/{{ quiz.questions|length }}</h3>
+                <p class="text-secondary mb-0">Review the answers above, then revisit lessons if you want another attempt.</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <p class="text-secondary mb-0">This quiz has no questions yet.</p>
+    {% endif %}
+</section>
+{% endblock %}
+

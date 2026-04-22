@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="auth-card">
+            <span class="eyebrow">Welcome back</span>
+            <h1 class="h2 mt-3 mb-4">Sign in to continue learning</h1>
+            <form method="post" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.email.label(class="form-label") }}
+                    {{ form.email(class="form-control form-control-lg", placeholder="name@example.com") }}
+                    {% for error in form.email.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control form-control-lg", placeholder="Your password") }}
+                    {% for error in form.password.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {{ form.submit(class="btn btn-dark btn-lg w-100 rounded-pill mt-2") }}
+            </form>
+            <p class="text-secondary mt-4 mb-0">
+                New to Mamba?
+                <a href="{{ url_for('auth.register') }}" class="link-offset-2">Create an account</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

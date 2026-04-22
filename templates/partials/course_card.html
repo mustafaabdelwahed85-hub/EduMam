@@ -1,0 +1,29 @@
+{% set enrolled_ids = current_user.enrollments | map(attribute='course_id') | list if current_user.is_authenticated and current_user.role != 'admin' else [] %}
+<div class="col">
+    <div class="card h-100 border-0 shadow-sm course-card">
+        <div class="card-cover {% if course.image %}has-image{% endif %}" {% if course.image %}style="background-image: linear-gradient(135deg, rgba(13, 148, 136, 0.35), rgba(15, 23, 42, 0.72)), url('{{ course.image }}');"{% endif %}>
+            <span class="badge rounded-pill text-bg-light">{{ course.total_lessons }} lessons</span>
+            <span class="badge rounded-pill text-bg-dark bg-opacity-75">{{ course.enrolled_students }} learners</span>
+        </div>
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title mb-2">{{ course.title }}</h5>
+            <p class="card-text text-secondary flex-grow-1">{{ course.description[:140] }}{% if course.description|length > 140 %}...{% endif %}</p>
+            <div class="d-flex gap-2 flex-wrap mt-3">
+                <a class="btn btn-dark rounded-pill px-3" href="{{ url_for('main.course_detail', course_id=course.id) }}">View Details</a>
+                {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                    <a class="btn btn-outline-secondary rounded-pill px-3" href="{{ url_for('admin.edit_course', course_id=course.id) }}">Manage</a>
+                {% elif current_user.is_authenticated and course.id in enrolled_ids %}
+                    <a class="btn btn-outline-success rounded-pill px-3" href="{{ url_for('student.dashboard') }}">Open Dashboard</a>
+                {% elif current_user.is_authenticated %}
+                    <form method="post" action="{{ url_for('student.enroll_course', course_id=course.id) }}">
+                        {{ enroll_form.hidden_tag() }}
+                        <button class="btn btn-outline-primary rounded-pill px-3" type="submit">Enroll</button>
+                    </form>
+                {% else %}
+                    <a class="btn btn-outline-primary rounded-pill px-3" href="{{ url_for('auth.login') }}">Login to Enroll</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+

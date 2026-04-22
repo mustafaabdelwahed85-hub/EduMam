@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<section class="mb-5">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+        <div>
+            <span class="eyebrow">Admin console</span>
+            <h1 class="display-6 fw-bold mt-3 mb-2">Manage the Mamba platform</h1>
+            <p class="text-secondary mb-0">Create content, monitor activity, and keep the learning catalog in great shape.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-success rounded-pill px-4" href="{{ url_for('admin.new_course') }}">New Course</a>
+            <a class="btn btn-outline-dark rounded-pill px-4" href="{{ url_for('admin.users_list') }}">View Users</a>
+        </div>
+    </div>
+</section>
+
+<section class="row g-3 mb-5">
+    <div class="col-md-6 col-xl">
+        <div class="metric-card">
+            <div class="metric-value">{{ stats.courses }}</div>
+            <div class="metric-label">Courses</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl">
+        <div class="metric-card">
+            <div class="metric-value">{{ stats.lessons }}</div>
+            <div class="metric-label">Lessons</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl">
+        <div class="metric-card">
+            <div class="metric-value">{{ stats.quizzes }}</div>
+            <div class="metric-label">Quizzes</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl">
+        <div class="metric-card">
+            <div class="metric-value">{{ stats.students }}</div>
+            <div class="metric-label">Students</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl">
+        <div class="metric-card">
+            <div class="metric-value">{{ stats.admins }}</div>
+            <div class="metric-label">Admins</div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4">
+    <div class="col-lg-8">
+        <div class="surface-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 mb-0">Course management</h2>
+                <a class="btn btn-sm btn-dark rounded-pill" href="{{ url_for('admin.new_course') }}">Add course</a>
+            </div>
+            {% if courses %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Course</th>
+                                <th>Lessons</th>
+                                <th>Quizzes</th>
+                                <th>Students</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ course.title }}</div>
+                                        <div class="small text-secondary">{{ course.created_at.strftime('%Y-%m-%d') }}</div>
+                                    </td>
+                                    <td>{{ course.lessons|length }}</td>
+                                    <td>{{ course.quizzes|length }}</td>
+                                    <td>{{ course.enrolled_students }}</td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                            <a class="btn btn-sm btn-outline-dark rounded-pill" href="{{ url_for('admin.edit_course', course_id=course.id) }}">Edit</a>
+                                            <a class="btn btn-sm btn-outline-secondary rounded-pill" href="{{ url_for('main.course_detail', course_id=course.id) }}">Preview</a>
+                                            <form method="post" action="{{ url_for('admin.delete_course', course_id=course.id) }}">
+                                                {{ delete_form.hidden_tag() }}
+                                                <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit" data-confirm="Delete this course and all nested content?">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">No courses yet. Create the first one to start publishing content.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="surface-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 mb-0">Recent users</h2>
+                <a class="btn btn-sm btn-outline-dark rounded-pill" href="{{ url_for('admin.users_list') }}">All users</a>
+            </div>
+            <div class="vstack gap-3">
+                {% for user in users[:6] %}
+                    <div class="mini-panel">
+                        <div class="fw-semibold">{{ user.username }}</div>
+                        <div class="text-secondary small">{{ user.email }}</div>
+                        <div class="text-secondary small text-uppercase">{{ user.role }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

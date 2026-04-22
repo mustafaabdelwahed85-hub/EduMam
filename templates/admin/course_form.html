@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}{% if course %}Edit Course{% else %}New Course{% endif %}{% endblock %}
+
+{% block content %}
+<section class="mb-4">
+    <span class="eyebrow">Admin course editor</span>
+    <h1 class="display-6 fw-bold mt-3 mb-2">{% if course %}Edit {{ course.title }}{% else %}Create a new course{% endif %}</h1>
+    <p class="text-secondary mb-0">Write a clear description, then add lessons and quizzes once the course is saved.</p>
+</section>
+
+<section class="surface-card p-4 p-lg-5 mb-4">
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="row g-3">
+            <div class="col-12">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control form-control-lg") }}
+                {% for error in form.title.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-12">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows="5") }}
+                {% for error in form.description.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-12">
+                {{ form.image.label(class="form-label") }}
+                {{ form.image(class="form-control", placeholder="Optional image URL") }}
+                {% for error in form.image.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+            {{ form.submit(class="btn btn-success rounded-pill px-4") }}
+            <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.dashboard') }}">Back to dashboard</a>
+        </div>
+    </form>
+    {% if course %}
+        <form method="post" action="{{ url_for('admin.delete_course', course_id=course.id) }}" class="mt-3">
+            {{ delete_form.hidden_tag() }}
+            <button class="btn btn-outline-danger rounded-pill px-4" type="submit" data-confirm="Delete this course and all related lessons, quizzes, and enrollments?">Delete course</button>
+        </form>
+    {% endif %}
+</section>
+
+{% if course %}
+<section class="row g-4">
+    <div class="col-lg-6">
+        <div class="surface-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 mb-0">Lessons</h2>
+                <a class="btn btn-sm btn-dark rounded-pill" href="{{ url_for('admin.new_lesson', course_id=course.id) }}">Add lesson</a>
+            </div>
+            {% if course.lessons %}
+                <div class="vstack gap-3">
+                    {% for lesson in course.lessons %}
+                        <div class="mini-panel">
+                            <div class="fw-semibold">{{ lesson.title }}</div>
+                            <div class="text-secondary small mb-3">Text lesson{% if lesson.video_url %} with video embed{% endif %}</div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a class="btn btn-sm btn-outline-dark rounded-pill" href="{{ url_for('admin.edit_lesson', lesson_id=lesson.id) }}">Edit</a>
+                                <a class="btn btn-sm btn-outline-secondary rounded-pill" href="{{ url_for('student.lesson_page', course_id=course.id, lesson_id=lesson.id) }}">Preview</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">No lessons yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="surface-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 mb-0">Quizzes</h2>
+                <a class="btn btn-sm btn-dark rounded-pill" href="{{ url_for('admin.new_quiz', course_id=course.id) }}">Add quiz</a>
+            </div>
+            {% if course.quizzes %}
+                <div class="vstack gap-3">
+                    {% for quiz in course.quizzes %}
+                        <div class="mini-panel">
+                            <div class="fw-semibold">{{ quiz.title }}</div>
+                            <div class="text-secondary small mb-3">{{ quiz.questions|length }} questions</div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a class="btn btn-sm btn-outline-dark rounded-pill" href="{{ url_for('admin.edit_quiz', quiz_id=quiz.id) }}">Edit</a>
+                                <a class="btn btn-sm btn-outline-secondary rounded-pill" href="{{ url_for('student.quiz_page', course_id=course.id, quiz_id=quiz.id) }}">Preview</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">No quizzes yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
